@@ -1,5 +1,5 @@
 # ChitChat
-Este projeto foi desenvolido por terceiro com diversas vunerabilidades, a proposta é corrigir, testar e mitigar falhas de segurança da aplicação
+Este projeto foi desenvolvido por terceiro com diversas vunerabilidades, a proposta é corrigir, testar e mitigar falhas de segurança da aplicação
 Repositório original: https://github.com/NESCAU-UFLA/VulnerableWebApp
 
 ## Sumário
