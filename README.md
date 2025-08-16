@@ -1,55 +1,33 @@
-# VulnerableWebApp
-Este projeto tem por objetivo o desenvolvimento de uma aplicação web intencionalmente vulnerável.
+# ChitChat
+Este projeto foi desenvolido por terceiro com diversas vunerabilidades, a proposta é corrigir, testar e mitigar falhas de segurança da aplicação
+Repositório original: https://github.com/NESCAU-UFLA/VulnerableWebApp
 
 ## Sumário
-* <a href="#aviso-legal">Aviso Legal</a>;
 * <a href="#primeiros-passos">Primeiros passos</a>
   * <a href="#pré-requisitos">Pré-requisitos</a>;
-  * <a href="#arquivos-configurações-e-permissões">Arquivos, configurações e permissões</a>;
+  * <a href="#comando-para-execução-do-projeto">Comando para execução do projeto</a>;
 * <a href="#sobre-a-aplicação">Sobre a Aplicação</a>
-  * <a href="#vulnerabilidades-e-não-conformidades-intencionalmente-colocadas">Vulnerabilidades e não conformidades intencionalmente colocadas</a>;
+  * <a href="#vulnerabilidades-listadas-no-projeto-original">Vulnerabilidades listadas no projeto original</a>;
 * <a href="#tecnologias-utilizadas">Tecnologias Utilizadas</a>;
-* <a href="#regras-de-diretórios">Regras de Diretórios</a>;
 * <a href="#diretórios">Diretórios</a>;
 * <a href="#autores">Autores</a>.
 
-## Aviso Legal
-As vulnerabilidades e não conformidades aqui presentes foram propositalmente colocadas para fins educacionais apenas. Em hipótese alguma incentivamos o uso de tais más práticas.
-
 ## Primeiros passos
-Antes de por a mão na massa, devemos ficar atentos a algumas questões para que a aplicação funcione corretamente. Serão descritos a seguir os **pré-requisitos** para a base do seu funcionamento e, não menos importante, também algumas instruções sobre **arquivos e configurações**.
+Antes de começar a usar o projeto certifique-se de seguir os **pré-requisitos** para a base do seu funcionamento.
 
 ### Pré-requisitos
-* Certifique-se de ter ambos servidores Apache e MySQL instalados e configurados. Confira <a href="#tecnologias-utilizadas">Tecnologias Utilizadas</a> para mais detalhes.
-* Instale a extensão MySQLi para o PHP;
+* Certifique-se de ter o Docker instalado na maquina segue documentação: <a href="https://www.docker.com/">Docker</a>.
 
-### Arquivos, configurações e permissões
-* O *sql script* para instanciar o *schema* da aplicação no banco de dados pode ser encontrado no diretório `db` com o nome `banco.sql`.
-* Todos os arquivos que devem ser utilizados na aplicação se encontram no diretório `src`.
-  * O arquivo de configuração para a conexão com o banco, além de demais variáveis globais necessárias à aplicação, se encontram no diretório `src/config/geral.php`. Crie um arquivo chamado `env.php` no mesmo diretório para instanciar as variáveis de ambiente, seguindo o modelo a seguir:
-  ```
-  <?php
-  // Configuração do banco
-  $_ENV['DB_HOST'] = '127.0.0.1';
-  $_ENV['DB_USER'] = 'user';
-  $_ENV['DB_PASS'] = 'password';
-  $_ENV['DB_NAME'] = 'Forum';
-
-  // Configuração de diretório
-  $_ENV['USER_IMG_PATH'] = '/var/www/html/uploads/';
-  ?>
-  ```
-  * Dê permissão de escrita ao diretório `src/uploads` no servidor da aplicação, para que os arquivos possam ser transferidos ao diretório durante o processo de *upload*.
-* No seu arquivo de configuração `php.ini` (Acesse <a href="https://www.php.net/manual/pt_BR/function.php-ini-loaded-file.php">essa página</a> em caso de dúvida para localizá-lo) verá que a configuração `allow_url_include` está em `Off`. Altere-a para `On` de modo que possa abrir arquivos de fora do sistema. Deixe assim: `allow_url_include = On`. Tal configuração deve ser manipulada para realizar testes de *RFI*.
+### Comando para execução do projeto
+Acessando o diretório do projeto no terminal já com o docker instalado na maquina digite:
+docker-compose -u --build e acesse no navegador o https://localhost:8080
 
 ## Sobre a Aplicação
 Trata-se de um fórum em que os usuários podem compartilhar mensagens entre si através de suas postagens.
 * O usuário pode cadastrar, editar e excluir sua conta, além de cadastrar, editar e excluir suas próprias postagens.
 * O administrador pode, além das funções já existentes de um usuário comum (com exceção de excluir sua conta), pode excluir as postagens dos demais usuários e suas contas.
 
-**Nota**: O primeiro usuário a ser registrado no sistema será o administrador.
-
-### Vulnerabilidades e não conformidades intencionalmente colocadas
+### Vulnerabilidades listadas no projeto original
 * Falta de uma política de senhas;
 * Tratamento de erro inapropriado;
 * Falta de proteção a ataques de força bruta;
@@ -67,33 +45,60 @@ Trata-se de um fórum em que os usuários podem compartilhar mensagens entre si 
 * *Command Execution;*
 * *CSRF (Cross-Site Request Forgery).*
 
-Lembrando que podem haver mais vulnerabilidades do que as listadas acima.
-
 ## Tecnologias Utilizadas
 * HTML5 e CSS3
 * JavaScript e jQuery versão 3.5.2
 * PHP versão 7.2.24
 * Apache versão 2.4.29
 * MySQL versão 5.7.27
-
-## Regras de Diretórios
-* Diretórios de desenvolvimento devem estar no modelo MVC.
-* Arquivos extras do front-end devem ficar no diretório `src/modules`.
-* A documentação deve ficar no diretório `docs`.
+* Docker versão 28.3.2
+* Docker-compose versão 28.3.2
 
 ## Diretórios
 ```sh
+D:.
+|-- docker-compose.yml
+|-- Dockerfile
+|-- LICENSE.md
+|-- README.md
 |-- db
+|   |-- banco.sql
+|   |-- forum.mwb
 |-- docs
-|-- src
+|   |-- Diagrama de Classe VWA.png
+|   |-- Diagrama ER.png
+\-- src
+    |-- index.php
     |-- config
+    |   |-- geral.php
     |-- controller
+    |   |-- postagem.php
+    |   |-- usuario.php
     |-- model
+    |   |-- Postagem.php
+    |   |-- Usuario.php
     |-- modules
+    |   |-- functions.js
+    |   |-- functions.php
+    |   |-- jquery-3.5.1.min.js
+    |   |-- style.css
     |-- persistence
+    |   |-- dbconfig.php
+    |   |-- PostagemDAO.php
+    |   |-- UsuarioDAO.php
     |-- uploads
-    |-- view
+    |   |-- default.png
+    |   |-- gatinho.jpeg
+    |   |-- wirebond_mask.png
+    \-- view
+        |-- cadastrar.php
+        |-- home.php
+        |-- perfil.php
+        |-- post.php
+        \-- teste-de-conexao.php
 ```
 
 ## Autores
-* <b>Vitor Oriel</b> - <a target="_blank" href="https://github.com/VitorOriel">Perfil</a>
+* <b>Rafael Vasconcelos - Líder da equipe</b>
+* <b>Kayque Setubal - Documentador/QA</b>
+* <b>Henrique Heruster - Desenvolvedor</b> 
