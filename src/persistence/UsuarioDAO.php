@@ -13,17 +13,39 @@ class UsuarioDAO {
      */
     public function inserir(Usuario $usuario) {
         $con = openCon();
-        $query = "SELECT * FROM Forum.Usuario WHERE Login = '".$usuario->getLogin()."';";
-        $res = mysqli_query($con, $query);
-        if (mysqli_num_rows($res) == 1)
+
+        // Verifica se o login já existe
+        $stmt = mysqli_prepare($con, "SELECT * FROM Forum.Usuario WHERE Login = ?");
+        mysqli_stmt_bind_param($stmt, "s", $usuario->getLogin());
+        mysqli_stmt_execute($stmt);
+        $res = mysqli_stmt_get_result($stmt);
+
+        if (mysqli_num_rows($res) == 1) {
+            mysqli_stmt_close($stmt);
+            closeCon($con);
             throw new Exception("Já existe um usuário com este login!");
-        $query = "INSERT INTO Forum.Usuario(Login, Nome, Senha, Foto) VALUES("
-                 ."'".$usuario->getLogin()."', "
-                 ."'".$usuario->getNome()."', "
-                 ."'".$usuario->getSenha()."', "
-                 ."'".$usuario->getFoto()."'"
-                 .");";
-        $res = mysqli_query($con, $query);
+        }
+        mysqli_stmt_close($stmt);
+
+        // Cria hash da senha
+        $senhaHash = password_hash($usuario->getSenha(), PASSWORD_DEFAULT);
+
+        // Inserção segura
+        $stmt = mysqli_prepare(
+            $con,
+            "INSERT INTO Forum.Usuario (Login, Nome, Senha, Foto) VALUES (?, ?, ?, ?)"
+        );
+        mysqli_stmt_bind_param(
+            $stmt,
+            "ssss",
+            $usuario->getLogin(),
+            $usuario->getNome(),
+            $senhaHash,
+            $usuario->getFoto()
+        );
+        mysqli_stmt_execute($stmt);
+
+        mysqli_stmt_close($stmt);
         closeCon($con);
     }
 
@@ -34,15 +56,36 @@ class UsuarioDAO {
      */
     public function login(Usuario $usuario) {
         $con = openCon();
-        $query = "SELECT * FROM Forum.Usuario WHERE "
-                 ."Login = '".$usuario->getLogin()."' AND "
-                 ."Senha = '".$usuario->getSenha()."';";
-        $res = mysqli_query($con, $query);
-        if (mysqli_num_rows($res) == 0)
+
+        // Busca apenas pelo login
+        $stmt = $con->prepare("SELECT * FROM Forum.Usuario WHERE Login = ?");
+        if (!$stmt) {
+            throw new Exception("Erro na preparação da query: " . $con->error);
+        }
+
+        $stmt->bind_param("s", $usuario->getLogin());
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        if ($res->num_rows == 0) {
             throw new Exception("Usuário ou senha inválidos.");
-        $usuario->Construtor(mysqli_fetch_row($res));
+        }
+
+        $row = $res->fetch_assoc();
+
+        // Verifica a senha informada contra o hash salvo no banco
+        if (!password_verify($usuario->getSenha(), $row['Senha'])) {
+            throw new Exception("Usuário ou senha inválidos.");
+        }
+
+        // Se passou, popula o objeto
+        $row['Senha'] = "";
+        $usuario->Construtor(array_values($row));
+
+        $stmt->close();
         closeCon($con);
     }
+
     
     /**
      * Método responsável por atualizar um usuário

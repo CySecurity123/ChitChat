@@ -11,41 +11,64 @@ class UsuarioController {
      * @return string O nome da imagem
      */
     private function carregarFoto() {
-        $imgName = "";
+        $imgName = "default.png";
+
         if (!empty($_FILES['foto']['name'])) {
-            $imgName = basename($_FILES['foto']['name']);
-            $imgDir = USER_IMG_PATH.$imgName;
-            $imgType = strtolower(pathinfo($imgDir, PATHINFO_EXTENSION));
-            $nameAux = basename($_FILES['foto']['name'], '.'.$imgType);
-            $i = 0;
-            while (file_exists($imgDir)) {
-                $imgName = $nameAux.'('.$i.').'.$imgType;
-                $imgDir = USER_IMG_PATH.$imgName;
-                ++$i;
+            $arquivo = $_FILES['foto'];
+
+            // Extensão
+            $extensao = strtolower(pathinfo($arquivo['name'], PATHINFO_EXTENSION));
+            $tiposPermitidos = ['png', 'jpg', 'jpeg'];
+            if (!in_array($extensao, $tiposPermitidos)) {
+                throw new Exception("Tipo de arquivo inválido. Apenas PNG, JPG e JPEG são permitidos.");
             }
-            if (!move_uploaded_file($_FILES['foto']['tmp_name'], $imgDir))
-                die("Nao foi possivel fazer o upload da imagem ao diretório $imgDir!");
-        } else
-            $imgName = "default.png";
+
+            // MIME type
+            $mimePermitidos = ['image/png', 'image/jpeg'];
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeTipo = finfo_file($finfo, $arquivo['tmp_name']);
+            finfo_close($finfo);
+
+            if (!in_array($mimeTipo, $mimePermitidos)) {
+                throw new Exception("Tipo de arquivo inválido. Apenas PNG, JPG e JPEG são permitidos.");
+            }
+
+            // Gera nome único
+            $imgName = uniqid() . "." . $extensao;
+            $imgDir = USER_IMG_PATH . $imgName;
+
+            if (!move_uploaded_file($arquivo['tmp_name'], $imgDir)) {
+                throw new Exception("Não foi possível fazer o upload da imagem.");
+            }
+        }
         return $imgName;
     }
 
     /**
      * Método responsável por realizar o cadastro de um usuário
      */
-    public function cadastrar() {
+        public function cadastrar() {
         $usuario = new Usuario();
-        $usuario->Construtor(array(0, $_POST['Login'], $_POST['Nome'], $_POST['Senha'], $this->carregarFoto()));
         try {
+            // Carrega a foto com validação e renomeação
+            $foto = $this->carregarFoto();
+
+            // Inicializa objeto usuário
+            $usuario->Construtor(array(0, $_POST['Login'], $_POST['Nome'], $_POST['Senha'], $foto));
+
+            // Chama DAO para inserir usuário
             (new UsuarioDAO())->inserir($usuario);
-            $_SESSION['resultado'] = [];
-            $_SESSION['resultado'][] = true;
-            $_SESSION['resultado'][] = "Cadastro efetuado com sucesso! Faça login...";
+
+            $_SESSION['resultado'] = [true, "Cadastro efetuado com sucesso! Faça login..."];
             header("Location: ../");
+
         } catch (Exception $e) {
-            if (!empty($_FILES['foto']['name']))
-                unlink(USER_IMG_PATH.$usuario->getFoto());
-            $_SESSION['resultado'] = $e->getMessage();
+            // Remove foto enviada se houver erro
+            if (!empty($usuario->getFoto()) && $usuario->getFoto() !== "default.png" && file_exists(USER_IMG_PATH . $usuario->getFoto())) {
+                unlink(USER_IMG_PATH . $usuario->getFoto());
+            }
+
+            $_SESSION['resultado'] = [false, $e->getMessage()];
             header("Location: ../?page=view/cadastrar.php");
         }
     }
@@ -58,6 +81,9 @@ class UsuarioController {
         $usuario->Construtor(array(0, $_POST['Login'], "", $_POST['Senha'], ""));
         try {
             (new UsuarioDAO())->login($usuario);
+
+            $usuario->setSenha("");
+
             $_SESSION['usuario'] = serialize($usuario);
             header("Location: ../view/home.php");
         } catch (Exception $e) {
@@ -67,6 +93,7 @@ class UsuarioController {
             header("Location: ../");
         }
     }
+
 
     /**
      * Método responsável por finalizar a sessão de um usuário
