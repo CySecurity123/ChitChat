@@ -36,7 +36,7 @@ class UsuarioDAO {
             $con,
             "INSERT INTO Forum.Usuario (Login, Nome, Senha, Foto) VALUES (?, ?, ?, ?)"
         );
-        
+
         $login = $usuario->getLogin();
         $nome  = $usuario->getNome();
         $foto  = $usuario->getFoto();
@@ -102,26 +102,46 @@ class UsuarioDAO {
      */
     public function atualizar(Usuario $usuario) {
         $con = openCon();
-        $query = "SELECT * FROM Forum.Usuario WHERE "
-                 ."IdUsuario = ".$usuario->getId()." AND "
-                 ."Login = '".$usuario->getLogin()."';";
-        $res = mysqli_query($con, $query);
-        if (mysqli_num_rows($res) == 0) {
-            $query = "SELECT * FROM Forum.Usuario WHERE "
-                     ."Login = '".$usuario->getLogin()."';";
-            $res = mysqli_query($con, $query);
-            if (mysqli_num_rows($res) == 1)
+
+        // Verifica se existe um usuário com o mesmo Id e Login
+        $stmt = $con->prepare("SELECT * FROM Forum.Usuario WHERE IdUsuario = ? AND Login = ?");
+        $id = $usuario->getId();
+        $login = $usuario->getLogin();
+        $stmt->bind_param("is", $id, $login);
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        if ($res->num_rows == 0) {
+            // Verifica se já existe outro usuário com o mesmo login
+            $stmt->close();
+            $stmt = $con->prepare("SELECT * FROM Forum.Usuario WHERE Login = ?");
+            $stmt->bind_param("s", $login);
+            $stmt->execute();
+            $res = $stmt->get_result();
+
+            if ($res->num_rows == 1) {
+                $stmt->close();
+                closeCon($con);
                 throw new Exception("Este nome de usuário já está em uso.");
+            }
         }
-        $query = "UPDATE Forum.Usuario SET "
-                 ."Login = '".$usuario->getLogin()."', "
-                 ."Nome = '".$usuario->getNome()."', "
-                 ."Senha = '".$usuario->getSenha()."', "
-                 ."Foto = '".$usuario->getFoto()."' "
-                 ."WHERE IdUsuario = ".$usuario->getId().";";
-        mysqli_query($con, $query);
+
+        $stmt->close();
+
+        // Gera hash da senha antes de atualizar
+        $senhaHash = password_hash($usuario->getSenha(), PASSWORD_DEFAULT);
+
+        // Atualiza os dados do usuário
+        $stmt = $con->prepare("UPDATE Forum.Usuario SET Login = ?, Nome = ?, Senha = ?, Foto = ? WHERE IdUsuario = ?");
+        $nome = $usuario->getNome();
+        $foto = $usuario->getFoto();
+        $stmt->bind_param("ssssi", $login, $nome, $senhaHash, $foto, $id);
+        $stmt->execute();
+
+        $stmt->close();
         closeCon($con);
     }
+
 
     /**
      * Método responsável por excluir um usuário do banco
