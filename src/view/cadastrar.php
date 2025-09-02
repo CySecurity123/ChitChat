@@ -23,12 +23,19 @@
                         </a>
                     </div>
                 </form>
-                <?php
-                if (isset($_SESSION['resultado'])) {
-                    echo '<p style="color:red">'.$_SESSION['resultado'].'</p>';
-                    unset($_SESSION['resultado']);
-                }
-                ?>
+                    <?php
+                    if (isset($_SESSION['resultado'])) {
+                        $isSuccess = $_SESSION['resultado'][0]; // true ou false
+                        $mensagem  = $_SESSION['resultado'][1]; // texto da mensagem
+
+                        // Define a cor de acordo com o resultado
+                        $color = $isSuccess ? 'green' : 'red';
+
+                        echo '<p style="color:'.$color.'">'.$mensagem.'</p>';
+
+                        unset($_SESSION['resultado']);
+                    }
+                    ?>
             </div>
         </div>
     </body>

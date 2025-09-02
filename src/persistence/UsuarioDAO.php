@@ -16,7 +16,8 @@ class UsuarioDAO {
 
         // Verifica se o login já existe
         $stmt = mysqli_prepare($con, "SELECT * FROM Forum.Usuario WHERE Login = ?");
-        mysqli_stmt_bind_param($stmt, "s", $usuario->getLogin());
+        $login = $usuario->getLogin();
+        mysqli_stmt_bind_param($stmt, "s", $login);
         mysqli_stmt_execute($stmt);
         $res = mysqli_stmt_get_result($stmt);
 
@@ -35,14 +36,20 @@ class UsuarioDAO {
             $con,
             "INSERT INTO Forum.Usuario (Login, Nome, Senha, Foto) VALUES (?, ?, ?, ?)"
         );
+        
+        $login = $usuario->getLogin();
+        $nome  = $usuario->getNome();
+        $foto  = $usuario->getFoto();
+
         mysqli_stmt_bind_param(
             $stmt,
             "ssss",
-            $usuario->getLogin(),
-            $usuario->getNome(),
+            $login,
+            $nome,
             $senhaHash,
-            $usuario->getFoto()
+            $foto
         );
+
         mysqli_stmt_execute($stmt);
 
         mysqli_stmt_close($stmt);
@@ -63,7 +70,8 @@ class UsuarioDAO {
             throw new Exception("Erro na preparação da query: " . $con->error);
         }
 
-        $stmt->bind_param("s", $usuario->getLogin());
+        $login = $usuario->getLogin();
+        $stmt->bind_param("s", $login);
         $stmt->execute();
         $res = $stmt->get_result();
 
