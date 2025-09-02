@@ -162,14 +162,40 @@ class UsuarioDAO {
      */
     public function recuperarPorId(int $id) {
         $con = openCon();
-        $query = "SELECT * FROM Forum.Usuario WHERE "
-                 ."IdUsuario = ".$id.";";
-        $res = mysqli_query($con, $query);
+
+        // Prepara a query para evitar SQL Injection
+        $stmt = $con->prepare("SELECT * FROM Forum.Usuario WHERE IdUsuario = ?");
+        if (!$stmt) {
+            closeCon($con);
+            throw new Exception("Erro na preparação da query: " . $con->error);
+        }
+
+        // Passa o id como inteiro
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+
+        $res = $stmt->get_result();
+        if (!$res) {
+            $stmt->close();
+            closeCon($con);
+            throw new Exception("Erro ao executar a query: " . $con->error);
+        }
+
+        if ($res->num_rows == 0) {
+            $stmt->close();
+            closeCon($con);
+            throw new Exception("Usuário não encontrado.");
+        }
+
         $usuario = new Usuario();
-        $usuario->Construtor(mysqli_fetch_array($res));
+        $usuario->Construtor($res->fetch_array());
+
+        $stmt->close();
         closeCon($con);
+
         return $usuario;
     }
+
 
     /**
      * Método responsável por recuperar um usuário através do id de sua postagem

@@ -92,16 +92,42 @@ class PostagemDAO {
      */
     public function recuperarPorId($id) {
         $con = openCon();
-        $query = "SELECT IdPostagem, Mensagem, DataPostagem, UltimaEdicao FROM Forum.Postagem WHERE "
-                 ."IdPostagem = ".$id.";";
-        $res = mysqli_query($con, $query);
-        if (!$res)
-            throw new Exception("Erro: ".mysqli_error($con)."<br/>Na query: ".$query);
+
+        // Preparando a query para evitar SQL Injection
+        $stmt = $con->prepare("SELECT IdPostagem, Mensagem, DataPostagem, UltimaEdicao 
+                            FROM Forum.Postagem 
+                            WHERE IdPostagem = ?");
+        if (!$stmt) {
+            closeCon($con);
+            throw new Exception("Erro na preparação da query: " . $con->error);
+        }
+
+        // Passa o id como inteiro
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+
+        $res = $stmt->get_result();
+        if (!$res) {
+            $stmt->close();
+            closeCon($con);
+            throw new Exception("Erro ao executar a query: " . $con->error);
+        }
+
+        if ($res->num_rows == 0) {
+            $stmt->close();
+            closeCon($con);
+            throw new Exception("Postagem não encontrada.");
+        }
+
         $postagem = new Postagem();
-        $postagem->Construtor(mysqli_fetch_array($res));
+        $postagem->Construtor($res->fetch_array());
+
+        $stmt->close();
         closeCon($con);
+
         return $postagem;
     }
+
 
     /**
      * Método responsável por recuperar todas as postagens do banco
