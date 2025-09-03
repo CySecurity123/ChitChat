@@ -86,16 +86,41 @@ class PostagemDAO {
      */
     public function recuperarPorUsuario(Usuario $usuario) {
         $con = openCon();
-        $query = "SELECT IdPostagem, Mensagem, DataPostagem, UltimaEdicao FROM Forum.Postagem WHERE "
-                 ."IdUsuario = ".$usuario->getId()." ORDER BY IdPostagem DESC;";
-        $res = mysqli_query($con, $query);
+
+        // Prepara a query para evitar SQL Injection
+        $stmt = $con->prepare("
+            SELECT IdPostagem, Mensagem, DataPostagem, UltimaEdicao
+            FROM Forum.Postagem
+            WHERE IdUsuario = ?
+            ORDER BY IdPostagem DESC
+        ");
+        if (!$stmt) {
+            closeCon($con);
+            throw new Exception("Erro na preparação da query: " . $con->error);
+        }
+
+        // Passa o Id do usuário como inteiro
+        $idUsuario = $usuario->getId();
+        $stmt->bind_param("i", $idUsuario);
+        $stmt->execute();
+
+        $res = $stmt->get_result();
+        if (!$res) {
+            $stmt->close();
+            closeCon($con);
+            throw new Exception("Erro ao executar a query: " . $con->error);
+        }
+
         $postagens = [];
-        foreach (mysqli_fetch_all($res) as $row) {
+        while ($row = $res->fetch_assoc()) {
             $postagem = new Postagem();
             $postagem->Construtor($row);
             $postagens[] = $postagem;
         }
+
+        $stmt->close();
         closeCon($con);
+
         $usuario->setPostagens($postagens);
     }
 

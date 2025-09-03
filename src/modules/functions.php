@@ -81,13 +81,17 @@ function mostrarPostagensPorMensagem(string $msg) {
  */
 function mostrarPostagensDoUsuario() {
     global $usuario;
+
+    // Carrega as postagens do usuário
     (new PostagemDAO())->recuperarPorUsuario($usuario);
-?>
+
+    ?>
     <div class="post-container" style="height: 250px;">
-        <?php listarPostagens([], $usuario); ?>
+        <?php listarPostagens($usuario->getPostagens(), $usuario); ?>
     </div>
-<?php
+    <?php
 }
+
 
 /**
  * Função responsável por recuperar e mostrar uma postagem

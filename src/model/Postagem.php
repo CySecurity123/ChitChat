@@ -24,11 +24,12 @@ class Postagem {
      * @param array $args O array de argumentos
      */
     public function Construtor(array $args) {
-        $this->id = $args[0];
-        $this->mensagem = $args[1];
-        $this->dataDaPostagem = $args[2];
-        $this->dataUltimaEdicao = $args[3];
+    $this->id               = $args['IdPostagem']       ?? 0;
+    $this->mensagem         = $args['Mensagem']         ?? '';
+    $this->dataDaPostagem   = $args['DataPostagem']     ?? '';
+    $this->dataUltimaEdicao = $args['UltimaEdicao']     ?? '';
     }
+
 
     /**
      * Método que retorna o id da postagem
