@@ -10,31 +10,33 @@ require_once("../persistence/PostagemDAO.php");
  */
 function listarPostagens(array $postagens, Usuario $autor = null) {
     $ehPar = true;
-    $color = "";
-    if ($autor != null)
-        $postagens = $autor->getPostagens();
+
     foreach ($postagens as $post) {
-        if ($ehPar)
-            $color = "#e8e8e8";
-        else
-            $color = "white";
+        $color = $ehPar ? "#e8e8e8" : "white";
         $ehPar = !$ehPar;
+
         if ($autor != null) {
-?>
+            // Caso $post seja um objeto da classe Postagem
+            ?>
             <a href="post.php?id=<?php echo $post->getId(); ?>" style="text-decoration: none; color: black;">
                 <div class="post-content" style="background-color: <?php echo $color; ?>;">
-                    <?php echo '['.$post->getDataPostagem().'] '.$autor->getNome().' escreveu:<br/>'.$post->getMensagem(); ?>
+                    <?php echo '[' . $post->getDataPostagem() . '] ' . $autor->getNome() . ' escreveu:<br/>' . $post->getMensagem(); ?>
                 </div>
             </a>
-        <?php
+            <?php
         } else {
-        ?>
-            <a href="post.php?id=<?php echo $post[0]; ?>" style="text-decoration: none; color: black;">
+            // Caso $post seja um array associativo vindo do DAO
+            $idPostagem    = $post['IdPostagem']    ?? '';
+            $mensagem      = $post['Mensagem']      ?? '';
+            $dataPostagem  = $post['DataPostagem']  ?? '';
+            $nomeAutor     = $post['Nome']          ?? '';
+            ?>
+            <a href="post.php?id=<?php echo $idPostagem; ?>" style="text-decoration: none; color: black;">
                 <div class="post-content" style="background-color: <?php echo $color; ?>;">
-                    <?php echo '['.$post[3].'] '.$post[7].' escreveu:<br/>'.$post[2]; ?>
+                    <?php echo '[' . $dataPostagem . '] ' . $nomeAutor . ' escreveu:<br/>' . $mensagem; ?>
                 </div>
             </a>
-        <?php
+            <?php
         }
     }
 }

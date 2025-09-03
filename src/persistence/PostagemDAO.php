@@ -54,16 +54,31 @@ class PostagemDAO {
      */
     public function recuperarTodas() {
         $con = openCon();
-        $query = "SELECT * FROM Forum.Postagem AS P INNER JOIN Forum.Usuario AS U ON "
-                 ."P.IdUsuario = U.IdUsuario ORDER BY IdPostagem ASC;";
+
+        // Query com JOIN para trazer dados do usuário
+        $query = "
+            SELECT P.IdPostagem, P.Mensagem, P.DataPostagem, P.UltimaEdicao, U.Nome
+            FROM Forum.Postagem AS P
+            INNER JOIN Forum.Usuario AS U ON P.IdUsuario = U.IdUsuario
+            ORDER BY P.IdPostagem ASC
+        ";
+
         $res = mysqli_query($con, $query);
-        if (mysqli_num_rows($res) > 0)
-            $rows = mysqli_fetch_all($res);
-        else
-            $rows = [];
+        if (!$res) {
+            closeCon($con);
+            throw new Exception("Erro ao executar a query: " . mysqli_error($con));
+        }
+
+        // Retorna array associativo
+        $rows = [];
+        if (mysqli_num_rows($res) > 0) {
+            $rows = mysqli_fetch_all($res, MYSQLI_ASSOC);
+        }
+
         closeCon($con);
         return $rows;
     }
+
 
     /**
      * Método responsável por recuperar as postagens de um dado usuário
@@ -136,16 +151,38 @@ class PostagemDAO {
      */
     public function recuperarPorMensagem(string $mensagem) {
         $con = openCon();
-        $query = "SELECT * FROM Forum.Postagem AS P INNER JOIN Forum.Usuario AS U ON "
-                 ."P.IdUsuario = U.IdUsuario WHERE "
-                 ."P.Mensagem LIKE '%".$mensagem."%' ORDER BY IdPostagem DESC;";
-        $res = mysqli_query($con, $query);
-        if (mysqli_num_rows($res) > 0)
-            $rows = mysqli_fetch_all($res);
-        else
-            $rows = [];
+
+        // Prepara a query com JOIN e LIKE
+        $stmt = $con->prepare("
+            SELECT * 
+            FROM Forum.Postagem AS P 
+            INNER JOIN Forum.Usuario AS U 
+            ON P.IdUsuario = U.IdUsuario 
+            WHERE P.Mensagem LIKE ? 
+            ORDER BY P.IdPostagem DESC
+        ");
+        if (!$stmt) {
+            closeCon($con);
+            throw new Exception("Erro na preparação da query: " . $con->error);
+        }
+
+        // Adiciona os '%' para o LIKE
+        $param = "%$mensagem%";
+        $stmt->bind_param("s", $param);
+
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        $rows = [];
+        if ($res->num_rows > 0) {
+            $rows = $res->fetch_all(MYSQLI_ASSOC);
+        }
+
+        $stmt->close();
         closeCon($con);
+
         return $rows;
     }
+
 }
 ?>
