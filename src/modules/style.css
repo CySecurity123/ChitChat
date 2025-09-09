@@ -48,7 +48,7 @@ h4 {
 }
 
 input[type=file] {
-    max-width: 100px;
+    /*max-width: 100px;*/
     color: transparent;
 }
 
@@ -90,3 +90,27 @@ input[type=text], input[type=password] {
     width: 100%;
     overflow-wrap: break-word;
 }
+.erro {
+    color: red;
+    font-size: 0.9em;
+    margin-bottom: 10px;
+}
+
+.containerCenterForm {
+    display: flex;
+    justify-content: center;
+    align-items: center;   
+    min-height: 100vh;     
+    padding: 20px; 
+}
+
+.shadow-boxForm {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    width: 100%;           
+    max-width: 400px;
+}
+
+

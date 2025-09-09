@@ -58,6 +58,7 @@ if (isset($_SESSION['usuario'])) {
                     </div>
                 </div>
                 <?php colunaDeEdicaoPerfil(); ?>
+                </d
             </div>
         </body>
     </html>

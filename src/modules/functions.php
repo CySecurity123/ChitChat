@@ -105,60 +105,62 @@ function mostrarPostagemPorId($id) {
         if ($usuario->getId() == $autor->getId())
             $_SESSION['usuario'] = serialize($autor);
 ?>
-        <div class="containerCenter shadow-box" style="background-color: white; width: 640px; height: 350px;">
-            <div style="min-width: 200px;">
-                <a href="home.php">
-                    <button style="float: left;">Voltar ao Início</button>
-                </a>
-                <div style="text-align: center; padding-left: 35px;">
-                    <div class="user-img" style="margin-top: 50px;">
-                        <?php echo '<img src="../uploads/'.$autor->getFoto().'" />'; ?>
-                    </div><br/>
-                    <h4>
-                        <?php echo $autor->getNome(); ?>
-                    </h4>
-                    <form method="POST" action="perfil.php">
-                        <input type="hidden" name="idUsuario" value="<?php echo $autor->getId(); ?>" />
-                        <button type="submit">Ver perfil</button>
-                    </form>
-                    <?php
-                    if ($usuario->getId() == 1 || $usuario->getId() == $autor->getId()) {
-                        $_SESSION['postId'] = $id;
-                        if ($usuario->getId() == $autor->getId())
-                            echo '<button id="editPostButton" onclick="mostrarFormEditarPost();">Editar postagem</button>';
-                    ?>
-                        <br/><br/>
-                        <form method="POST" action="../controller/postagem.php">
-                            <input type="hidden" name="Postagem" value="Excluir" />
-                            <button type="submit">Excluir postagem</button>
+        <div class="containerCenter">
+            <div class="shadow-box">
+                <div style="min-width: 200px;">
+                    <a href="home.php">
+                        <button style="float: left;">Voltar ao Início</button>
+                    </a>
+                    <div style="text-align: center; padding-left: 35px;">
+                        <div class="user-img" style="margin-top: 50px;">
+                            <?php echo '<img src="../uploads/'.$autor->getFoto().'" />'; ?>
+                        </div><br/>
+                        <h4>
+                            <?php echo $autor->getNome(); ?>
+                        </h4>
+                        <form method="POST" action="perfil.php">
+                            <input type="hidden" name="idUsuario" value="<?php echo $autor->getId(); ?>" />
+                            <button type="submit">Ver perfil</button>
                         </form>
-                    <?php
-                    }
-                    ?>
-                </div>
-            </div>
-            <div style="min-width: 400px; padding: 20px; padding-top: 30px;">
-                <div id="post-content">
-                    <div class="post-content" style="text-align: justify;">
-                        <?php echo '" '.$autor->getPostagemAtual()->getMensagem().' "'; ?>
-                    </div><br/>
-                    <div>
-                        Postado em: <?php echo $autor->getPostagemAtual()->getDataPostagem(); ?>
-                        <br/>
                         <?php
-                        $dataUltimaEdicao = $autor->getPostagemAtual()->getDataUltimaEdicao();
-                        if ($dataUltimaEdicao != "")
-                            echo 'Última edição em: '.$dataUltimaEdicao;
+                        if ($usuario->getId() == 1 || $usuario->getId() == $autor->getId()) {
+                            $_SESSION['postId'] = $id;
+                            if ($usuario->getId() == $autor->getId())
+                                echo '<button id="editPostButton" onclick="mostrarFormEditarPost();">Editar postagem</button>';
+                        ?>
+                            <br/><br/>
+                            <form method="POST" action="../controller/postagem.php">
+                                <input type="hidden" name="Postagem" value="Excluir" />
+                                <button type="submit">Excluir postagem</button>
+                            </form>
+                        <?php
+                        }
                         ?>
                     </div>
                 </div>
-                <div id="editPostForm" style="display: none; text-align: center; padding-top: 30px;">
-                    <form method="POST" action="../controller/postagem.php">
-                        <input type="hidden" name="Postagem" value="Editar" />
-                        <textarea name="Mensagem" style="height: 120px;" required ><?php echo $autor->getPostagemAtual()->getMensagem(); ?></textarea><br/><br/>
-                        <button type="submit">Salvar alterações</button>
-                    </form><br/><br/>
-                    <button onclick="esconderFormEditarPost();">Cancelar</button>
+                <div style="min-width: 400px; padding: 20px; padding-top: 30px;">
+                    <div id="post-content">
+                        <div class="post-content" style="text-align: justify;">
+                            <?php echo '" '.$autor->getPostagemAtual()->getMensagem().' "'; ?>
+                        </div><br/>
+                        <div>
+                            Postado em: <?php echo $autor->getPostagemAtual()->getDataPostagem(); ?>
+                            <br/>
+                            <?php
+                            $dataUltimaEdicao = $autor->getPostagemAtual()->getDataUltimaEdicao();
+                            if ($dataUltimaEdicao != "")
+                                echo 'Última edição em: '.$dataUltimaEdicao;
+                            ?>
+                        </div>
+                    </div>
+                    <div id="editPostForm" style="display: none; text-align: center; padding-top: 30px;">
+                        <form method="POST" action="../controller/postagem.php">
+                            <input type="hidden" name="Postagem" value="Editar" />
+                            <textarea name="Mensagem" style="height: 120px;" required ><?php echo $autor->getPostagemAtual()->getMensagem(); ?></textarea><br/><br/>
+                            <button type="submit">Salvar alterações</button>
+                        </form><br/><br/>
+                        <button onclick="esconderFormEditarPost();">Cancelar</button>
+                    </div>
                 </div>
             </div>
         </div>
