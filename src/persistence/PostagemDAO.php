@@ -10,29 +10,58 @@ class PostagemDAO {
      * Método responsável por inserir uma postagem do usuário no banco
      * @param Usuario $usuario O autor da postagem
      */
-    public function inserir(Usuario $usuario) {
-        $con = openCon();
-        $postagem = $usuario->getPostagemAtual();
-        $query = "INSERT INTO Forum.Postagem(IdUsuario, Mensagem, DataPostagem, UltimaEdicao) VALUES ("
-                 .$usuario->getId().", "
-                 ."'".$postagem->getMensagem()."', "
-                 ."'".$postagem->getDataPostagem()."', "
-                 ."'".$postagem->getDataUltimaEdicao()."');";
-        mysqli_query($con, $query);
-        closeCon($con);
-    }
-
+        public function inserir(Usuario $usuario) {
+            $con = openCon();
+            $postagem = $usuario->getPostagemAtual();
+    
+            $stmt = $con->prepare("INSERT INTO Forum.Postagem(IdUsuario, Mensagem, DataPostagem, UltimaEdicao) VALUES (?, ?, ?, ?)");
+            if (!$stmt) {
+                closeCon($con);
+                throw new Exception("Erro na preparação da query: " . $con->error);
+            }
+    
+            $idUsuario = $usuario->getId();
+            $mensagem = $postagem->getMensagem();
+            $dataPostagem = $postagem->getDataPostagem();
+            $ultimaEdicao = $postagem->getDataUltimaEdicao();
+    
+            $stmt->bind_param("isss", $idUsuario, $mensagem, $dataPostagem, $ultimaEdicao);
+            
+            if (!$stmt->execute()) {
+                $stmt->close();
+                closeCon($con);
+                throw new Exception("Erro ao executar a query: " . $stmt->error);
+            }
+    
+            $stmt->close();
+            closeCon($con);
+        }
     /**
      * Método responsável por atualizar uma postagem do banco
      * @param Postagem $postagem A postagem a ser atualizada
      */
     public function atualizar(Postagem $postagem) {
         $con = openCon();
-        $query = "UPDATE Forum.Postagem SET "
-                 ."Mensagem = '".$postagem->getMensagem()."', "
-                 ."UltimaEdicao = '".$postagem->getDataUltimaEdicao()."' "
-                 ."WHERE IdPostagem = ".$postagem->getId().";";
-        mysqli_query($con, $query);
+
+        $stmt = $con->prepare("UPDATE Forum.Postagem SET Mensagem = ?, UltimaEdicao = ? WHERE IdPostagem = ?");
+        if (!$stmt) {
+            closeCon($con);
+            throw new Exception("Erro na preparação da query: " . $con->error);
+        }
+
+        $mensagem = $postagem->getMensagem();
+        $ultimaEdicao = $postagem->getDataUltimaEdicao();
+        $idPostagem = $postagem->getId();
+
+        $stmt->bind_param("ssi", $mensagem, $ultimaEdicao, $idPostagem);
+
+        if (!$stmt->execute()) {
+            $stmt->close();
+            closeCon($con);
+            throw new Exception("Erro ao executar a query: " . $stmt->error);
+        }
+
+        $stmt->close();
         closeCon($con);
     }
 
@@ -42,9 +71,24 @@ class PostagemDAO {
      */
     public function excluir(Postagem $postagem) {
         $con = openCon();
-        $query = "DELETE FROM Forum.Postagem WHERE "
-                 ."IdPostagem = ".$postagem->getId().";";
-        mysqli_query($con, $query);
+
+        $stmt = $con->prepare("DELETE FROM Forum.Postagem WHERE IdPostagem = ?");
+        if (!$stmt) {
+            closeCon($con);
+            throw new Exception("Erro na preparação da query: " . $con->error);
+        }
+
+        $idPostagem = $postagem->getId();
+
+        $stmt->bind_param("i", $idPostagem);
+
+        if (!$stmt->execute()) {
+            $stmt->close();
+            closeCon($con);
+            throw new Exception("Erro ao executar a query: " . $stmt->error);
+        }
+
+        $stmt->close();
         closeCon($con);
     }
 

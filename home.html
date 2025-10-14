@@ -1,0 +1,28 @@
+    <html>
+        <head>
+            <link href="modules/style.css" rel="stylesheet" type="text/css" />
+            <title>Login</title>
+        </head>
+        <body>
+            <div class="containerCenterForm">
+                <div class="shadow-boxForm">
+                        <div style="padding-top: 20%; max-width: 200px;">
+                            <form method="POST" action="controller/usuario.php">
+
+                                <input type="hidden" name="Usuario" value="Login" />
+                                <input type="text" name="Login" placeholder="Usuario" /><br/><br/>
+                                <input type="password" autocomplete="new-password" name="Senha" placeholder="Senha" /><br/><br/>
+
+                                <div style="display: flex; justify-content: space-between;">
+                                    <a href="?page=view/cadastrar.php">
+                                        <button type="button">Cadastrar</button>
+                                    </a>
+                                    <button type="submit" name="login">Entrar</button>
+                                </div>
+
+                            </form>
+                                                </div>
+                </div>
+            </div>
+        </body>
+    </html>

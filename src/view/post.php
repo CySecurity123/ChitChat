@@ -25,7 +25,7 @@ if (isset($_SESSION['usuario']) && (isset($_GET['id']) || isset($_GET['msg']))) 
     </html>
 <?php
     if (isset($_SESSION['resultado'])) {
-        echo '<script>alert("'.$_SESSION['resultado'].'")</script>';
+        echo '<script>alert(' . json_encode($_SESSION['resultado']) . ')</script>';
         unset($_SESSION['resultado']);
     }
 } else

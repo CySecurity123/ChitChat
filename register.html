@@ -1,4 +1,3 @@
-<?php session_start(); ?>
 <html>
     <head>
     <script type="text/javascript" src="../modules/jquery-3.5.1.min.js"></script>
@@ -38,16 +37,7 @@
                         </div>
                     </form>
 
-                    <?php
-                    if (isset($_SESSION['resultado'])) {
-                        $isSuccess = $_SESSION['resultado'][0]; // true ou false
-                        $mensagem  = $_SESSION['resultado'][1]; // texto da mensagem
-                        $color = $isSuccess ? 'green' : 'red';
-                        echo '<p style="color:'.$color.'">'.htmlspecialchars($mensagem).'</p>';
-                        unset($_SESSION['resultado']);
-                    }
-                    ?>
-                </div>
+                    <p style="color:red">Data too long for column 'Login' at row 1</p>                </div>
             </div>
         </div>
 

@@ -39,10 +39,10 @@ if (isset($_SESSION['usuario'])) {
                 </div>
                 <div class="column shadow-box" style="width: 200px;">
                     <div class="user-img" style="margin-top: 10px;">
-                        <?php echo '<img src="../uploads/'.$user->getFoto().'" />'; ?>
+                        <?php echo '<img src="../uploads/'.htmlspecialchars($user->getFoto()).'" />'; ?>
                     </div>
                     <h3>
-                        <?php echo "Bem-vindo, ".$user->getNome()."!";?>
+                        <?php echo "Bem-vindo, ".htmlspecialchars($user->getNome())."!";?>
                     </h3><br/>
                     <div>
                         <a href="perfil.php">

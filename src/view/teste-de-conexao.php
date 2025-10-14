@@ -19,7 +19,7 @@ if (isset($_SESSION['usuario'])) {
                     <div style="height: 100%; overflow-x: auto; overflow-y: auto; background-color: black; color: white; margin: 20px; padding-left: 20px; padding-right: 20px;">
                         <?php
                         if (isset($_GET['ip']))
-                            echo '<pre>'.shell_exec("ping -c 4 ".$_GET['ip']).'</pre>';
+                            echo '<pre>'.shell_exec("ping -c 4 ".escapeshellarg($_GET['ip'])).'</pre>';
                         ?>
                     </div>
                 </div>

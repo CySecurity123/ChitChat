@@ -20,7 +20,7 @@ function listarPostagens(array $postagens, Usuario $autor = null) {
             ?>
             <a href="post.php?id=<?php echo $post->getId(); ?>" style="text-decoration: none; color: black;">
                 <div class="post-content" style="background-color: <?php echo $color; ?>;">
-                    <?php echo '[' . $post->getDataPostagem() . '] ' . $autor->getNome() . ' escreveu:<br/>' . $post->getMensagem(); ?>
+                    <?php echo '[' . htmlspecialchars($post->getDataPostagem()) . '] ' . htmlspecialchars($autor->getNome()) . ' escreveu:<br/>' . htmlspecialchars($post->getMensagem()); ?>
                 </div>
             </a>
             <?php
@@ -33,7 +33,7 @@ function listarPostagens(array $postagens, Usuario $autor = null) {
             ?>
             <a href="post.php?id=<?php echo $idPostagem; ?>" style="text-decoration: none; color: black;">
                 <div class="post-content" style="background-color: <?php echo $color; ?>;">
-                    <?php echo '[' . $dataPostagem . '] ' . $nomeAutor . ' escreveu:<br/>' . $mensagem; ?>
+                    <?php echo '[' . htmlspecialchars($dataPostagem) . '] ' . htmlspecialchars($nomeAutor) . ' escreveu:<br/>' . htmlspecialchars($mensagem); ?>
                 </div>
             </a>
             <?php
@@ -66,7 +66,7 @@ function mostrarPostagensPorMensagem(string $msg) {
                 <button style="float: left;">Voltar ao Início</button>
             </a><br/><br/>
             <h2 style="margin-left: 40px;">
-                Resultados da pesquisa para: <?php echo $msg; ?>
+                Resultados da pesquisa para: <?php echo htmlspecialchars($msg); ?>
             </h2>
             <div class="post-container" style="height: 200px; width: 90%; margin: 40px;">
                 <?php listarPostagens($postagens); ?>
@@ -116,7 +116,7 @@ function mostrarPostagemPorId($id) {
                             <?php echo '<img src="../uploads/'.$autor->getFoto().'" />'; ?>
                         </div><br/>
                         <h4>
-                            <?php echo $autor->getNome(); ?>
+                            <?php echo htmlspecialchars($autor->getNome()); ?>
                         </h4>
                         <form method="POST" action="perfil.php">
                             <input type="hidden" name="idUsuario" value="<?php echo $autor->getId(); ?>" />
@@ -141,7 +141,7 @@ function mostrarPostagemPorId($id) {
                 <div style="min-width: 400px; padding: 20px; padding-top: 30px;">
                     <div id="post-content">
                         <div class="post-content" style="text-align: justify;">
-                            <?php echo '" '.$autor->getPostagemAtual()->getMensagem().' "'; ?>
+                            <?php echo '" '.htmlspecialchars($autor->getPostagemAtual()->getMensagem()).' "'; ?>
                         </div><br/>
                         <div>
                             Postado em: <?php echo $autor->getPostagemAtual()->getDataPostagem(); ?>
@@ -156,7 +156,7 @@ function mostrarPostagemPorId($id) {
                     <div id="editPostForm" style="display: none; text-align: center; padding-top: 30px;">
                         <form method="POST" action="../controller/postagem.php">
                             <input type="hidden" name="Postagem" value="Editar" />
-                            <textarea name="Mensagem" style="height: 120px;" required ><?php echo $autor->getPostagemAtual()->getMensagem(); ?></textarea><br/><br/>
+                            <textarea name="Mensagem" style="height: 120px;" required ><?php echo htmlspecialchars($autor->getPostagemAtual()->getMensagem()); ?></textarea><br/><br/>
                             <button type="submit">Salvar alterações</button>
                         </form><br/><br/>
                         <button onclick="esconderFormEditarPost();">Cancelar</button>
@@ -234,9 +234,9 @@ function verificarVisitanteDoPerfil() {
 function mostrarDadosDoPerfil() {
     global $admin;
     global $usuario;
-    echo '<h4>Nome: '.$usuario->getNome().'</h4>';
+    echo '<h4>Nome: '.htmlspecialchars($usuario->getNome()).'</h4>';
     if (!isset($_POST['idUsuario']) || $admin) {
-        echo '<h4>Usuário: '.$usuario->getLogin().'</h4>';
+        echo '<h4>Usuário: '.htmlspecialchars($usuario->getLogin()).'</h4>';
         if (!isset($_POST['idUsuario'])) {
             echo '<button onclick="mostrarFormDados();">Editar dados</button>';
             // O administrador não pode excluir sua própria conta

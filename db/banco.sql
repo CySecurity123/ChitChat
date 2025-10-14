@@ -23,3 +23,4 @@ CREATE TABLE IF NOT EXISTS Forum.Postagem(
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
+

@@ -23,13 +23,13 @@ if (isset($_SESSION['usuario'])) {
                     </a>
                     <div class="inner-column" style="width: 150px; margin-left: 35px;">
                         <div class="user-img" style="margin-top:40px;">
-                            <?php echo '<img src="../uploads/'.$usuario->getFoto().'" />'; ?>
+                            <?php echo '<img src="../uploads/'.htmlspecialchars($usuario->getFoto()).'" />'; ?>
                         </div><br/>
                         <div id="dados">
                             <?php mostrarDadosDoPerfil(); ?>
                         </div>
                         <div id="formImagem" style="display: none;">
-                            <form method="POST" action="../controller/usuario.php" enctype="multipart/form-data">
+                            <form id="form-foto" method="POST" action="../controller/usuario.php" enctype="multipart/form-data">
                                 <input type="hidden" name="Usuario" value="EditarFoto" />
                                 <label>Escolha uma imagem...</label>
                                 <input type="file" name="foto" style="width:200px;" required /><br/><br/>
@@ -49,8 +49,8 @@ if (isset($_SESSION['usuario'])) {
                     <div id="formDados" style="display: none;">
                         <form method="POST" action="../controller/usuario.php">
                             <input type="hidden" name="Usuario" value="EditarDados" />
-                            <input type="text" name="Login" placeholder="Usuário: <?php echo $usuario->getLogin(); ?>" /><br/>
-                            <input type="text" name="Nome" placeholder="Nome: <?php echo $usuario->getNome(); ?>" /><br/><br/>
+                            <input type="text" name="Login" placeholder="Usuário: <?php echo htmlspecialchars($usuario->getLogin()); ?>" /><br/>
+                            <input type="text" name="Nome" placeholder="Nome: <?php echo htmlspecialchars($usuario->getNome()); ?>" /><br/><br/>
                             <button type="submit">Alterar dados</button>
                         </form>
                         <br/><br/><br/><br/><br/>
@@ -58,7 +58,16 @@ if (isset($_SESSION['usuario'])) {
                     </div>
                 </div>
                 <?php colunaDeEdicaoPerfil(); ?>
-                </d
+                </div>
+            </div>
+
+            <!-- Modal de Erro -->
+            <div id="errorModal" class="modal">
+                <div class="modal-content">
+                    <span class="close-button">&times;</span>
+                    <h2>Erro no Upload</h2>
+                    <p id="modalErrorMessage"></p>
+                </div>
             </div>
         </body>
     </html>

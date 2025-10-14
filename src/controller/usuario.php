@@ -126,14 +126,36 @@ class UsuarioController {
      * Método responsável por atualizar a foto de um usuário
      */
     public function atualizarFoto() {
-        $usuario = unserialize($_SESSION['usuario']);
-        $fotoAntiga = $usuario->getFoto();
-        $usuario->setFoto($this->carregarFoto());
-        $this->atualizar($usuario, "Foto alterada com sucesso!");
-        if ($_SESSION['resultado'][0])
-            if ($fotoAntiga !== "default.png")
-                unlink(USER_IMG_PATH.$fotoAntiga);
-        header("Location: ../view/perfil.php");
+        // Prepara a resposta para o AJAX
+        header('Content-Type: application/json');
+
+        try {
+            $usuario = unserialize($_SESSION['usuario']);
+            $fotoAntiga = $usuario->getFoto();
+
+            // Carrega a nova foto
+            $novaFoto = $this->carregarFoto();
+            $usuario->setFoto($novaFoto);
+
+            // Atualiza no banco
+            $this->atualizar($usuario, "Foto alterada com sucesso!");
+
+            // Se a atualização no banco deu certo, apaga a foto antiga
+            if ($_SESSION['resultado'][0]) {
+                if ($fotoAntiga !== "default.png" && file_exists(USER_IMG_PATH . $fotoAntiga)) {
+                    unlink(USER_IMG_PATH . $fotoAntiga);
+                }
+                echo json_encode(['success' => true, 'message' => 'Foto alterada com sucesso!']);
+            } else {
+                // Se falhou a atualização no banco, joga uma exceção
+                throw new Exception($_SESSION['resultado'][1]);
+            }
+        } catch (Exception $e) {
+            // Se qualquer passo falhar, retorna o erro em JSON
+            http_response_code(400); // Bad Request
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit; // Impede qualquer outra saída
     }
 
     /**
