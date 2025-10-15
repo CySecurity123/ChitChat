@@ -54,7 +54,7 @@ Para garantir o funcionamento adequado da aplicação, você precisará ter o **
 
 1.  **Clone o Repositório:**
     ```bash
-    git clone https://github.com/seu-usuario/ChitChat.git # Substitua pelo link do seu repositório
+    git clone https://github.com/seu-usuario/ChitChat.git
     cd ChitChat
     ```
 
@@ -142,49 +142,45 @@ As seguintes tecnologias são a base para o desenvolvimento e funcionamento do C
 
 A organização dos arquivos e diretórios do projeto segue a estrutura abaixo:
 
-.
-├── docker-compose.yml       # Configuração dos serviços Docker
-├── Dockerfile               # Instruções para construir a imagem PHP/Apache
-├── LICENSE.md               # Arquivo de licença do projeto
-├── README.md                # Este arquivo
-├── db                       # Contém arquivos relacionados ao banco de dados
-│   ├── banco.sql            # Script SQL para criação do banco e tabelas
-│   └── forum.mwb            # Modelo do banco de dados (MySQL Workbench)
-├── docs                     # Documentação e diagramas
-│   ├── Diagrama de Classe VWA.png
-│   └── Diagrama ER.png
-└── src                      # Código fonte da aplicação PHP
-    ├── index.php            # Página inicial da aplicação
-    ├── config               # Configurações globais
-    │   └── geral.php
-    ├── controller           # Lógica de controle para requisições
-    │   ├── postagem.php
-    │   └── usuario.php
-    ├── model                # Modelos de dados e lógica de negócio
-    │   ├── Postagem.php
-    │   └── Usuario.php
-    ├── modules              # Módulos e bibliotecas frontend/backend
-    │   ├── functions.js
-    │   ├── functions.php
-    │   ├── jquery-3.5.1.min.js
-    │   └── style.css
-    ├── persistence          # Camada de persistência de dados (DAO)
-    │   ├── dbconfig.php
-    │   ├── PostagemDAO.php
-    │   └── UsuarioDAO.php
-    ├── uploads              # Diretório para arquivos enviados por usuários
-    │   ├── default.png
-    │   ├── gatinho.jpeg
-    │   └── wirebond_mask.png
-    └── view                 # Arquivos de visualização (páginas HTML/PHP)
-        ├── cadastrar.php
-        ├── home.php
-        ├── perfil.php
-        ├── post.php
-        └── teste-de-conexao.php
-
-
----
+```
+├── 📁 db/
+│   ├── 🗄️ banco.sql
+│   └── 📄 forum.mwb
+├── 📁 src/
+│   ├── 📁 config/
+│   │   └── 🐘 geral.php
+│   ├── 📁 controller/
+│   │   ├── 🐘 postagem.php
+│   │   └── 🐘 usuario.php
+│   ├── 📁 model/
+│   │   ├── 🐘 Postagem.php
+│   │   └── 🐘 Usuario.php
+│   ├── 📁 modules/
+│   │   ├── 📄 functions.js
+│   │   ├── 🐘 functions.php
+│   │   ├── 📄 jquery-3.5.1.min.js 🚫 (auto-hidden)
+│   │   └── 🎨 style.css
+│   ├── 📁 persistence/
+│   │   ├── 🐘 PostagemDAO.php
+│   │   ├── 🐘 UsuarioDAO.php
+│   │   └── 🐘 dbconfig.php
+│   ├── 📁 uploads/
+│   │   ├── 🖼️ default.png
+│   │   ├── 🖼️ gatinho.jpeg 🚫 (auto-hidden)
+│   │   └── 🖼️ wirebond_mask.png
+│   ├── 📁 view/
+│   │   ├── 🐘 cadastrar.php
+│   │   ├── 🐘 home.php
+│   │   ├── 🐘 perfil.php
+│   │   ├── 🐘 post.php
+│   │   └── 🐘 teste-de-conexao.php
+│   └── 🐘 index.php
+├── 🚫 .gitignore
+├── 🐳 Dockerfile
+├── 📜 LICENSE.md
+├── 📖 README.md
+└── ⚙️ docker-compose.yml
+```
 
 ## 🤝 Como Contribuir
 
