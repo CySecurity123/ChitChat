@@ -51,5 +51,21 @@ services:
       db:
         condition: service_healthy
 
+  attack-tool:
+    build:
+      context: ./attack-tool
+    container_name: attack_tool
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      web:
+        condition: service_started
+    ports:
+      - "8501:8501"
+    environment:
+      - STREAMLIT_SERVER_RUN_ON_SAVE=true
+      - STREAMLIT_SERVER_FILE_WATCHER_TYPE=watchdog
+    command: ["streamlit", "run", "main.py", "--server.port=8501", "--server.address=0.0.0.0"]  # Rode o app
+
 volumes:
   db_data:
