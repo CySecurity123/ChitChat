@@ -33,7 +33,7 @@ jobs:
         run: |
           wget https://github.com/zaproxy/zaproxy/releases/download/v2.16.1/ZAP_2.16.1_Linux.tar.gz -O ZAP_2.16.1_Linux.tar.gz
           tar -xzf ZAP_2.16.1_Linux.tar.gz
-          chmod +x ZAP_2.16.1_Linux.tar.gz/zap.sh
+          chmod +x ZAP_2.16.1_Linux/zap.sh
 
       # 5️⃣ Executa ZAP Baseline Scan
       - name: Executar OWASP ZAP Baseline Scan
