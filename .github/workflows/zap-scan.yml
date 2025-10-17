@@ -35,15 +35,15 @@ jobs:
           tar -xzf ZAP_2.16.1_Linux.tar.gz
           chmod +x ZAP_2.16.1/zap.sh
 
-      # 5️⃣ Executa ZAP Baseline Scan
+      # 5️⃣ Executa ZAP Baseline Scan (diretório gravável)
       - name: Executar OWASP ZAP Baseline Scan
         run: |
-          mkdir -p reports
-          ZAP_2.16.1/zap.sh -daemon -quickurl http://localhost:8000 -quickout reports/report.html
+          mkdir -p $GITHUB_WORKSPACE/reports
+          ZAP_2.16.1/zap.sh -daemon -quickurl http://localhost:8000 -quickout $GITHUB_WORKSPACE/reports/report.html
 
       # 6️⃣ Faz upload do relatório HTML
       - name: Upload do relatório ZAP
         uses: actions/upload-artifact@v4
         with:
           name: zap-report
-          path: reports/report.html
+          path: $GITHUB_WORKSPACE/reports/report.html
