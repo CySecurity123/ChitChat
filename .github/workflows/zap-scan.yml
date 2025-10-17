@@ -12,11 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1️⃣ Clona o código do repositório
+    #Clona o código do repositório
     - name: Checkout do código
       uses: actions/checkout@v4
 
-    # 2️⃣ Instala o PHP e sobe o servidor embutido
+    #Instala o PHP e sobe o servidor embutido
     - name: Iniciar servidor PHP
       run: |
         sudo apt-get update
@@ -24,14 +24,14 @@ jobs:
         nohup php -S localhost:8000 -t public/ &
         sleep 10  # espera o servidor inicializar
 
-    # 3️⃣ Executa o ZAP Baseline Scan
+    #Executa o ZAP Baseline Scan
     - name: OWASP ZAP Baseline Scan
       uses: zaproxy/action-baseline@v0.11.0
       with:
         target: 'http://localhost:8000'
         cmd_options: '-a'
 
-    # 4️⃣ Salva o relatório HTML como artefato
+    #Salva o relatório HTML como artefato
     - name: Upload do relatório ZAP
       uses: actions/upload-artifact@v4
       with:
