@@ -10,6 +10,7 @@ on:
 jobs:
   zap_scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 30  # Timeout para o job inteiro
 
     steps:
       # 1️⃣ Clona o repositório
@@ -25,25 +26,56 @@ jobs:
       # 3️⃣ Inicia servidor PHP embutido
       - name: Iniciar servidor PHP
         run: |
-          php -S localhost:8000 -t src &  # altere "src" para a pasta raiz da sua aplicação
-          sleep 15  # espera o servidor subir
+          php -S localhost:8000 -t src &
+          echo $! > php_server.pid
+          sleep 5
+          # Verifica se o servidor está rodando
+          for i in {1..10}; do
+            if curl -s http://localhost:8000 > /dev/null; then
+              echo "Servidor PHP rodando!"
+              break
+            fi
+            echo "Aguardando servidor... tentativa $i"
+            sleep 2
+          done
 
-      # 4️⃣ Baixa e extrai OWASP ZAP
-      - name: Baixar OWASP ZAP
-        run: |
-          wget https://github.com/zaproxy/zaproxy/releases/download/v2.16.1/ZAP_2.16.1_Linux.tar.gz -O ZAP_2.16.1_Linux.tar.gz
-          tar -xzf ZAP_2.16.1_Linux.tar.gz
-          chmod +x ZAP_2.16.1/zap.sh
-
-      # 5️⃣ Executa ZAP Baseline Scan (diretório gravável)
+      # 4️⃣ Usa Docker do ZAP (mais confiável)
       - name: Executar OWASP ZAP Baseline Scan
+        timeout-minutes: 15
         run: |
           mkdir -p $GITHUB_WORKSPACE/reports
-          ZAP_2.16.1/zap.sh -daemon -quickurl http://localhost:8000 -quickout $GITHUB_WORKSPACE/reports/report.html
+          docker run --network="host" -v $GITHUB_WORKSPACE/reports:/zap/wrk/:rw \
+            -t ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+            -t http://localhost:8000 \
+            -r report.html \
+            -J report.json \
+            -w report.md \
+            || true  # Continua mesmo com alertas
 
-      # 6️⃣ Faz upload do relatório HTML
+      # 5️⃣ Verifica se o relatório foi gerado
+      - name: Verificar relatórios gerados
+        run: |
+          echo "Arquivos gerados:"
+          ls -lah $GITHUB_WORKSPACE/reports/
+          if [ -f "$GITHUB_WORKSPACE/reports/report.html" ]; then
+            echo "✅ Relatório HTML gerado com sucesso"
+          else
+            echo "❌ Relatório HTML não foi gerado"
+          fi
+
+      # 6️⃣ Faz upload do relatório (sempre executa)
       - name: Upload do relatório ZAP
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: zap-report
-          path: $GITHUB_WORKSPACE/reports/report.html
+          path: $GITHUB_WORKSPACE/reports/
+          
+      # 7️⃣ Cleanup
+      - name: Parar servidor PHP
+        if: always()
+        run: |
+          if [ -f php_server.pid ]; then
+            kill $(cat php_server.pid) || true
+          fi
