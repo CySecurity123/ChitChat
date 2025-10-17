@@ -38,11 +38,12 @@ jobs:
       # 5️⃣ Executa ZAP Baseline Scan
       - name: Executar OWASP ZAP Baseline Scan
         run: |
-          ZAP_2.16.1/zap.sh -daemon -quickurl http://localhost:8000 -quickout report.html
+          mkdir -p reports
+          ZAP_2.16.1/zap.sh -daemon -quickurl http://localhost:8000 -quickout reports/report.html
 
       # 6️⃣ Faz upload do relatório HTML
       - name: Upload do relatório ZAP
         uses: actions/upload-artifact@v4
         with:
           name: zap-report
-          path: report.html
+          path: reports/report.html
