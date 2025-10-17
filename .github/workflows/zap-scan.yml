@@ -12,33 +12,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      #Clona o código
+      # 1️⃣ Clona o repositório
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      #Instala o PHP
+      # 2️⃣ Instala PHP
       - name: Instalar PHP
         run: |
           sudo apt-get update
           sudo apt-get install -y php
 
-      #Inicia o servidor PHP embutido
+      # 3️⃣ Inicia servidor PHP embutido
       - name: Iniciar servidor PHP
         run: |
           php -S localhost:8000 -t src &  # altere "src" para a pasta raiz da sua aplicação
-          sleep 10  # espera o servidor subir
+          sleep 15  # espera o servidor subir
 
-      #Instala OWASP ZAP standalone
-      - name: Instalar OWASP ZAP
+      # 4️⃣ Baixa e extrai OWASP ZAP
+      - name: Baixar OWASP ZAP
         run: |
-          sudo apt-get install -y zaproxy
+          wget https://github.com/zaproxy/zaproxy/releases/download/v2.13.0/ZAP_2_13_0_Linux.tar.gz -O zap.tar.gz
+          tar -xzf zap.tar.gz
+          chmod +x ZAP_2_13_0/zap.sh
 
-      #Executa o ZAP Baseline Scan
+      # 5️⃣ Executa ZAP Baseline Scan
       - name: Executar OWASP ZAP Baseline Scan
         run: |
-          zap.sh -daemon -quickurl http://localhost:8000 -quickout report.html
+          ZAP_2_13_0/zap.sh -daemon -quickurl http://localhost:8000 -quickout report.html
 
-      #Faz upload do relatório HTML como artefato
+      # 6️⃣ Faz upload do relatório HTML
       - name: Upload do relatório ZAP
         uses: actions/upload-artifact@v4
         with:
