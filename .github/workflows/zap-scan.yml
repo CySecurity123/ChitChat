@@ -42,8 +42,12 @@ jobs:
       # 4️⃣ Usa Docker do ZAP (mais confiável)
       - name: Executar OWASP ZAP Baseline Scan
         timeout-minutes: 15
+        continue-on-error: true  # Continua mesmo se falhar
         run: |
           mkdir -p $GITHUB_WORKSPACE/reports
+          echo "🔍 Iniciando ZAP Scan..."
+          echo "📂 Diretório de trabalho: $GITHUB_WORKSPACE/reports"
+          
           docker run --network="host" -v $GITHUB_WORKSPACE/reports:/zap/wrk/:rw \
             -t ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
@@ -51,17 +55,43 @@ jobs:
             -r report.html \
             -J report.json \
             -w report.md \
-            || true  # Continua mesmo com alertas
+            -d 2>&1 | tee $GITHUB_WORKSPACE/zap_output.log || echo "⚠️ ZAP terminou com código de saída: $?"
+          
+          echo "✅ Comando ZAP finalizado"
+          echo "📋 Últimas 50 linhas do log:"
+          tail -50 $GITHUB_WORKSPACE/zap_output.log || echo "Log não disponível"
 
-      # 5️⃣ Verifica se o relatório foi gerado
-      - name: Verificar relatórios gerados
+      # 5️⃣ Debug - Verificar se servidor está acessível
+      - name: Testar acesso ao servidor
+        if: always()
         run: |
-          echo "Arquivos gerados:"
-          ls -lah $GITHUB_WORKSPACE/reports/
+          echo "Testando servidor PHP..."
+          curl -v http://localhost:8000 || echo "❌ Servidor não está respondendo"
+          echo "Processos PHP rodando:"
+          ps aux | grep php || echo "Nenhum processo PHP encontrado"
+
+      # 6️⃣ Verificar se o relatório foi gerado
+      - name: Verificar relatórios gerados
+        if: always()
+        run: |
+          echo "📁 Conteúdo do diretório reports:"
+          ls -lah $GITHUB_WORKSPACE/reports/ || echo "Diretório reports não existe"
+          echo ""
+          echo "📁 Conteúdo do workspace:"
+          ls -lah $GITHUB_WORKSPACE/
+          echo ""
           if [ -f "$GITHUB_WORKSPACE/reports/report.html" ]; then
             echo "✅ Relatório HTML gerado com sucesso"
+            wc -l $GITHUB_WORKSPACE/reports/report.html
           else
             echo "❌ Relatório HTML não foi gerado"
+          fi
+          
+          # Mostra log completo do ZAP se existir
+          if [ -f "$GITHUB_WORKSPACE/zap_output.log" ]; then
+            echo ""
+            echo "📄 Log completo do ZAP:"
+            cat $GITHUB_WORKSPACE/zap_output.log
           fi
 
       # 6️⃣ Faz upload do relatório (sempre executa)
