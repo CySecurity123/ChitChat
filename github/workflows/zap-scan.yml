@@ -2,9 +2,9 @@ name: OWASP ZAP Scan
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "corrigido" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "corrigido" ]
   workflow_dispatch:
 
 jobs:
