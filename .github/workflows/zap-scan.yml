@@ -44,35 +44,41 @@ jobs:
         timeout-minutes: 15
         continue-on-error: true
         run: |
-          # Cria diretório com caminho absoluto
-          mkdir -p ${{ github.workspace }}/reports
-          chmod 777 ${{ github.workspace }}/reports
+          # Cria diretório reports no workspace
+          cd ${{ github.workspace }}
+          mkdir -p reports
+          chmod -R 777 reports
+          
+          echo "📂 Diretório criado: $(pwd)/reports"
+          echo "📂 Caminho absoluto: ${{ github.workspace }}/reports"
           
           # Verifica se servidor está acessível
           echo "🧪 Testando servidor..."
           curl -I http://localhost:8000 || echo "❌ Servidor não responde"
           
           echo "🔍 Iniciando ZAP Scan..."
-          echo "📂 Diretório de saída: ${{ github.workspace }}/reports"
           
-          # Roda ZAP com caminho absoluto
-          docker run --network="host" \
-            -v ${{ github.workspace }}/reports:/zap/wrk/:rw \
+          # Roda ZAP
+          docker run --rm --network="host" \
+            -v "${{ github.workspace }}/reports:/zap/wrk:rw" \
             -t ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
             -t http://localhost:8000 \
             -r report.html \
             -J report.json \
             -w report.md \
-            -I \
-            2>&1 | tee ${{ github.workspace }}/zap_full_output.log
-          
-          EXIT_CODE=${PIPESTATUS[0]}
-          echo "ZAP exit code: $EXIT_CODE"
+            -I || echo "⚠️ ZAP finalizou com código: $?"
           
           echo ""
-          echo "📋 Verificando arquivos gerados dentro do container:"
-          ls -lah ${{ github.workspace }}/reports/ || echo "Diretório vazio"
+          echo "✅ Scan finalizado!"
+          echo "📋 Listando conteúdo do diretório reports:"
+          ls -lah "${{ github.workspace }}/reports/"
+          
+          echo ""
+          echo "📋 Verificando se arquivos existem:"
+          test -f "${{ github.workspace }}/reports/report.html" && echo "✅ report.html existe" || echo "❌ report.html NÃO existe"
+          test -f "${{ github.workspace }}/reports/report.json" && echo "✅ report.json existe" || echo "❌ report.json NÃO existe"
+          test -f "${{ github.workspace }}/reports/report.md" && echo "✅ report.md existe" || echo "❌ report.md NÃO existe"
 
       # 5️⃣ Debug - Verificar se servidor está acessível
       - name: Testar acesso ao servidor
@@ -113,7 +119,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: zap-report
-          path: $GITHUB_WORKSPACE/reports/
+          path: ${{ github.workspace }}/reports/
           
       # 7️⃣ Cleanup
       - name: Parar servidor PHP
