@@ -26,12 +26,12 @@ jobs:
       # 3️⃣ Inicia servidor PHP embutido
       - name: Iniciar servidor PHP
         run: |
-          php -S localhost:8000 -t src &
+          php -S localhost:8080 -t src &
           echo $! > php_server.pid
           sleep 5
           # Verifica se o servidor está rodando
           for i in {1..10}; do
-            if curl -s http://localhost:8000 > /dev/null; then
+            if curl -s http://localhost:8080 > /dev/null; then
               echo "Servidor PHP rodando!"
               break
             fi
@@ -54,7 +54,7 @@ jobs:
           
           # Verifica se servidor está acessível
           echo "🧪 Testando servidor..."
-          curl -I http://localhost:8000 || echo "❌ Servidor não responde"
+          curl -I http://localhost:8080 || echo "❌ Servidor não responde"
           
           echo "🔍 Iniciando ZAP Scan..."
           
@@ -63,7 +63,7 @@ jobs:
             -v "${{ github.workspace }}/reports:/zap/wrk:rw" \
             -t ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
-            -t http://localhost:8000 \
+            -t http://localhost:8080 \
             -r report.html \
             -J report.json \
             -w report.md \
@@ -85,7 +85,7 @@ jobs:
         if: always()
         run: |
           echo "Testando servidor PHP..."
-          curl -v http://localhost:8000 || echo "❌ Servidor não está respondendo"
+          curl -v http://localhost:8080 || echo "❌ Servidor não está respondendo"
           echo "Processos PHP rodando:"
           ps aux | grep php || echo "Nenhum processo PHP encontrado"
 
