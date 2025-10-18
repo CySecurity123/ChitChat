@@ -1,0 +1,130 @@
+name: OWASP ZAP Scan
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  zap_scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30  # Timeout para o job inteiro
+
+    steps:
+      # 1️⃣ Clona o repositório
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # 2️⃣ Instala PHP
+      - name: Instalar PHP
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y php
+
+      # 3️⃣ Inicia servidor PHP embutido
+      - name: Iniciar servidor PHP
+        run: |
+          php -S localhost:8000 -t src &
+          echo $! > php_server.pid
+          sleep 5
+          # Verifica se o servidor está rodando
+          for i in {1..10}; do
+            if curl -s http://localhost:8000 > /dev/null; then
+              echo "Servidor PHP rodando!"
+              break
+            fi
+            echo "Aguardando servidor... tentativa $i"
+            sleep 2
+          done
+
+      # 4️⃣ Usa Docker do ZAP (mais confiável)
+      - name: Executar OWASP ZAP Baseline Scan
+        timeout-minutes: 15
+        continue-on-error: true
+        run: |
+          # Cria diretório reports no workspace
+          cd ${{ github.workspace }}
+          mkdir -p reports
+          chmod -R 777 reports
+          
+          echo "📂 Diretório criado: $(pwd)/reports"
+          echo "📂 Caminho absoluto: ${{ github.workspace }}/reports"
+          
+          # Verifica se servidor está acessível
+          echo "🧪 Testando servidor..."
+          curl -I http://localhost:8000 || echo "❌ Servidor não responde"
+          
+          echo "🔍 Iniciando ZAP Scan..."
+          
+          # Roda ZAP
+          docker run --rm --network="host" \
+            -v "${{ github.workspace }}/reports:/zap/wrk:rw" \
+            -t ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+            -t http://localhost:8000 \
+            -r report.html \
+            -J report.json \
+            -w report.md \
+            -I || echo "⚠️ ZAP finalizou com código: $?"
+          
+          echo ""
+          echo "✅ Scan finalizado!"
+          echo "📋 Listando conteúdo do diretório reports:"
+          ls -lah "${{ github.workspace }}/reports/"
+          
+          echo ""
+          echo "📋 Verificando se arquivos existem:"
+          test -f "${{ github.workspace }}/reports/report.html" && echo "✅ report.html existe" || echo "❌ report.html NÃO existe"
+          test -f "${{ github.workspace }}/reports/report.json" && echo "✅ report.json existe" || echo "❌ report.json NÃO existe"
+          test -f "${{ github.workspace }}/reports/report.md" && echo "✅ report.md existe" || echo "❌ report.md NÃO existe"
+
+      # 5️⃣ Debug - Verificar se servidor está acessível
+      - name: Testar acesso ao servidor
+        if: always()
+        run: |
+          echo "Testando servidor PHP..."
+          curl -v http://localhost:8000 || echo "❌ Servidor não está respondendo"
+          echo "Processos PHP rodando:"
+          ps aux | grep php || echo "Nenhum processo PHP encontrado"
+
+      # 6️⃣ Verificar se o relatório foi gerado
+      - name: Verificar relatórios gerados
+        if: always()
+        run: |
+          echo "📁 Conteúdo do diretório reports (absoluto):"
+          ls -lah ${{ github.workspace }}/reports/ || echo "Diretório não existe"
+          
+          echo ""
+          echo "📁 Conteúdo do diretório reports (relativo):"
+          ls -lah reports/ || echo "Diretório não existe"
+          
+          echo ""
+          echo "📁 Buscando arquivos de relatório em todo workspace:"
+          find ${{ github.workspace }} -name "report.*" -type f
+          
+          echo ""
+          if [ -f "reports/report.html" ]; then
+            echo "✅ Relatório HTML encontrado!"
+            echo "Tamanho do arquivo:"
+            wc -l reports/report.html
+          else
+            echo "❌ Relatório HTML não encontrado no diretório esperado"
+          fi
+
+      # 6️⃣ Faz upload do relatório (sempre executa)
+      - name: Upload do relatório ZAP
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: ${{ github.workspace }}/reports/
+          
+      # 7️⃣ Cleanup
+      - name: Parar servidor PHP
+        if: always()
+        run: |
+          if [ -f php_server.pid ]; then
+            kill $(cat php_server.pid) || true
+          fi
