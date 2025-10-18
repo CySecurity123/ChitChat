@@ -6,7 +6,7 @@ BASE_URL = "http://web:80"
 LOG_DIR = "/app/logs"
 SLEEP_INTERVAL = 1
 TARGET_USERNAME = "admin"
-
+ 
 # Criar diretório de logs
 os.makedirs(LOG_DIR, exist_ok=True)
 
