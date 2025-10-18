@@ -45,10 +45,16 @@ jobs:
         continue-on-error: true  # Continua mesmo se falhar
         run: |
           mkdir -p $GITHUB_WORKSPACE/reports
+          
+          # CRÍTICO: Ajusta permissões para o Docker poder escrever
+          chmod -R 777 $GITHUB_WORKSPACE/reports
+          
           echo "🔍 Iniciando ZAP Scan..."
           echo "📂 Diretório de trabalho: $GITHUB_WORKSPACE/reports"
           
-          docker run --network="host" -v $GITHUB_WORKSPACE/reports:/zap/wrk/:rw \
+          docker run --network="host" \
+            -v $GITHUB_WORKSPACE/reports:/zap/wrk/:rw \
+            -u zap \
             -t ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
             -t http://localhost:8000 \
