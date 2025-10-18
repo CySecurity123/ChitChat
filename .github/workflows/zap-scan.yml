@@ -42,30 +42,37 @@ jobs:
       # 4️⃣ Usa Docker do ZAP (mais confiável)
       - name: Executar OWASP ZAP Baseline Scan
         timeout-minutes: 15
-        continue-on-error: true  # Continua mesmo se falhar
+        continue-on-error: true
         run: |
-          mkdir -p $GITHUB_WORKSPACE/reports
+          # Cria diretório com caminho absoluto
+          mkdir -p ${{ github.workspace }}/reports
+          chmod 777 ${{ github.workspace }}/reports
           
-          # CRÍTICO: Ajusta permissões para o Docker poder escrever
-          chmod -R 777 $GITHUB_WORKSPACE/reports
+          # Verifica se servidor está acessível
+          echo "🧪 Testando servidor..."
+          curl -I http://localhost:8000 || echo "❌ Servidor não responde"
           
           echo "🔍 Iniciando ZAP Scan..."
-          echo "📂 Diretório de trabalho: $GITHUB_WORKSPACE/reports"
+          echo "📂 Diretório de saída: ${{ github.workspace }}/reports"
           
+          # Roda ZAP com caminho absoluto
           docker run --network="host" \
-            -v $GITHUB_WORKSPACE/reports:/zap/wrk/:rw \
-            -u zap \
+            -v ${{ github.workspace }}/reports:/zap/wrk/:rw \
             -t ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
             -t http://localhost:8000 \
             -r report.html \
             -J report.json \
             -w report.md \
-            -d 2>&1 | tee $GITHUB_WORKSPACE/zap_output.log || echo "⚠️ ZAP terminou com código de saída: $?"
+            -I \
+            2>&1 | tee ${{ github.workspace }}/zap_full_output.log
           
-          echo "✅ Comando ZAP finalizado"
-          echo "📋 Últimas 50 linhas do log:"
-          tail -50 $GITHUB_WORKSPACE/zap_output.log || echo "Log não disponível"
+          EXIT_CODE=${PIPESTATUS[0]}
+          echo "ZAP exit code: $EXIT_CODE"
+          
+          echo ""
+          echo "📋 Verificando arquivos gerados dentro do container:"
+          ls -lah ${{ github.workspace }}/reports/ || echo "Diretório vazio"
 
       # 5️⃣ Debug - Verificar se servidor está acessível
       - name: Testar acesso ao servidor
@@ -80,24 +87,24 @@ jobs:
       - name: Verificar relatórios gerados
         if: always()
         run: |
-          echo "📁 Conteúdo do diretório reports:"
-          ls -lah $GITHUB_WORKSPACE/reports/ || echo "Diretório reports não existe"
-          echo ""
-          echo "📁 Conteúdo do workspace:"
-          ls -lah $GITHUB_WORKSPACE/
-          echo ""
-          if [ -f "$GITHUB_WORKSPACE/reports/report.html" ]; then
-            echo "✅ Relatório HTML gerado com sucesso"
-            wc -l $GITHUB_WORKSPACE/reports/report.html
-          else
-            echo "❌ Relatório HTML não foi gerado"
-          fi
+          echo "📁 Conteúdo do diretório reports (absoluto):"
+          ls -lah ${{ github.workspace }}/reports/ || echo "Diretório não existe"
           
-          # Mostra log completo do ZAP se existir
-          if [ -f "$GITHUB_WORKSPACE/zap_output.log" ]; then
-            echo ""
-            echo "📄 Log completo do ZAP:"
-            cat $GITHUB_WORKSPACE/zap_output.log
+          echo ""
+          echo "📁 Conteúdo do diretório reports (relativo):"
+          ls -lah reports/ || echo "Diretório não existe"
+          
+          echo ""
+          echo "📁 Buscando arquivos de relatório em todo workspace:"
+          find ${{ github.workspace }} -name "report.*" -type f
+          
+          echo ""
+          if [ -f "reports/report.html" ]; then
+            echo "✅ Relatório HTML encontrado!"
+            echo "Tamanho do arquivo:"
+            wc -l reports/report.html
+          else
+            echo "❌ Relatório HTML não encontrado no diretório esperado"
           fi
 
       # 6️⃣ Faz upload do relatório (sempre executa)
